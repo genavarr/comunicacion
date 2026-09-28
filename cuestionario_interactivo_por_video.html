@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cuestionario Interactivo: Comunicación Efectiva y Oratoria</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 9999px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="h-full flex flex-col text-slate-800 antialiased overflow-hidden">
+
+  <header class="bg-white border-b border-slate-200 z-30 shrink-0">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-100 shrink-0">
+          <i class="fa-solid fa-graduation-cap text-lg"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-slate-900 leading-tight text-sm sm:text-base md:text-lg">Academia de Comunicación & Oratoria</h1>
+          <p class="text-xs text-slate-500 hidden sm:block">6 módulos temáticos • 36 preguntas interactivas con marcas de tiempo</p>
+        </div>
+      </div>
+
+      <!-- Action buttons & overall score -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <div class="hidden md:flex flex-col text-right">
+          <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Aciertos Globales</span>
+          <span class="text-xs sm:text-sm font-bold text-slate-700" id="headerScore">0 / 36 (0%)</span>
+        </div>
+        <button id="soundToggleBtn" onclick="toggleAudio()" class="p-2 sm:p-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 transition" title="Activar/Desactivar sonido">
+          <i id="soundIcon" class="fa-solid fa-volume-high text-sm"></i>
+        </button>
+        <button onclick="openGlobalSummaryModal()" class="px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Resumen Global</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative max-w-7xl w-full mx-auto">
+    
+    <!-- Mobile horizontal section selector (Visible on small screens) -->
+    <div class="md:hidden bg-white border-b border-slate-200 px-3 py-2 flex items-center gap-2 overflow-x-auto custom-scrollbar shrink-0" id="mobileTabsBar">
+      <!-- Rendered dynamically -->
+    </div>
+
+    <!-- Sidebar Navigation (Desktop) -->
+    <aside id="sidebarMenu" class="hidden md:flex w-80 border-r border-slate-200 bg-white flex-col shrink-0 custom-scrollbar overflow-y-auto">
+      <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Módulos por Video</span>
+          <span id="modulesCompletedBadge" class="text-xs font-semibold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">0/6 listos</span>
+        </div>
+        <!-- Overall Progress bar -->
+        <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+          <div id="overallProgressBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Navigation List -->
+      <nav class="p-3 space-y-1.5 flex-1" id="sectionNavList">
+        <!-- Rendered dynamically -->
+      </nav>
+
+      <!-- Sidebar Footer Controls -->
+      <div class="p-3 border-t border-slate-100 bg-slate-50/80 flex gap-2">
+        <button onclick="resetCurrentSection()" class="flex-1 py-2 px-3 text-xs font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg transition text-center flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-rotate-left text-slate-400"></i> Reiniciar Sección
+        </button>
+        <button onclick="resetAllQuiz()" class="py-2 px-3 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 hover:bg-rose-100 rounded-lg transition" title="Reiniciar todo el cuestionario">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col bg-slate-50 overflow-y-auto custom-scrollbar p-3 sm:p-5 lg:p-7" id="mainContainer">
+      
+      <!-- Current Video Banner -->
+      <section id="sectionHeroCard" class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm mb-5 transition-all duration-300">
+        <!-- Injected via JS -->
+      </section>
+
+      <!-- Questions List Container -->
+      <div class="space-y-4 sm:space-y-5" id="questionsContainer">
+        <!-- Injected via JS -->
+      </div>
+
+      <!-- Bottom Pagination / Controls -->
+      <div class="mt-8 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 pb-6">
+        <button id="prevSecBtn" onclick="changeSection(currentSectionIndex - 1)" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-100 transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-arrow-left"></i> Sección Anterior
+        </button>
+        
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button id="gradeSecBtn" onclick="gradeCurrentSection()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold shadow-md shadow-indigo-100 hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-check-double"></i> Calificar esta Sección
+          </button>
+        </div>
+
+        <button id="nextSecBtn" onclick="changeSection(currentSectionIndex + 1)" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700 text-sm font-semibold hover:bg-indigo-100 transition flex items-center justify-center gap-2">
+          Siguiente Sección <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <div id="summaryModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl border border-slate-100 flex flex-col max-h-[90vh] overflow-hidden">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-lg">
+            <i class="fa-solid fa-chart-column"></i>
+          </div>
+          <div>
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900">Desempeño y Métricas Globales</h2>
+            <p class="text-xs text-slate-500">Resumen integral de los 6 videos evaluados</p>
+          </div>
+        </div>
+        <button onclick="closeModal('summaryModal')" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto custom-scrollbar my-4 space-y-3 pr-1" id="summaryContent">
+        <!-- Rendered via JS -->
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex justify-end gap-2.5">
+        <button onclick="closeModal('summaryModal')" class="px-4 py-2 text-sm rounded-xl bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200 transition">Cerrar</button>
+        <button onclick="exportResultsSummary()" class="px-4 py-2 text-sm rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-copy"></i> Copiar Reporte
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div id="toastInner" class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-sm font-semibold bg-white text-slate-800 border-slate-200">
+      <span id="toastIcon"></span>
+      <span id="toastMessage"></span>
+    </div>
+  </div>
+
+  <script>
+    const videoSections = [
+      {
+        id: 1,
+        title: "Comunicación clara y efectiva con niños",
+        shortTitle: "1. Con niños",
+        youtubeId: "cu92NKiUtzQ",
+        url: "https://www.youtube.com/watch?v=cu92NKiUtzQ",
+        description: "Estrategias de lenguaje positivo, modulación emocional y alternativas asertivas para comunicarse eficazmente con menores.",
+        questions: [
+          {
+            id: "m1_q1",
+            text: "¿Cuál es la primera acción que propone el video para una comunicación efectiva?",
+            options: [
+              { key: "A", text: "Hablar más fuerte" },
+              { key: "B", text: "Escuchar con atención" },
+              { key: "C", text: "Evitar dar instrucciones" },
+              { key: "D", text: "Usar muchas emociones en las palabras" }
+            ],
+            correct: "B",
+            timestamp: "0:11",
+            explanation: "El video establece que el punto de partida indispensable es prestar atención activa y escuchar a los niños antes de instruir."
+          },
+          {
+            id: "m1_q2",
+            text: "¿Por qué el video recomienda usar pocas emociones en las palabras cuando hablamos con niños?",
+            options: [
+              { key: "A", text: "Porque las emociones siempre confunden a los adultos" },
+              { key: "B", text: "Porque en la cultura centroamericana no se muestran emociones" },
+              { key: "C", text: "Para evitar que el niño o la niña se confunda sobre el mensaje" },
+              { key: "D", text: "Porque las emociones están prohibidas en la escuela" }
+            ],
+            correct: "C",
+            timestamp: "0:47–1:03",
+            explanation: "Un desborde de alteración emocional distrae al niño del objetivo central de la indicación que se le está comunicando."
+          },
+          {
+            id: "m1_q3",
+            text: "Según el video, ¿cuál es una alternativa positiva a decir “ustedes son necios y alborotados”?",
+            options: [
+              { key: "A", text: "“No quiero escucharles nunca”" },
+              { key: "B", text: "“Necesito que levanten la mano para hablar, uno a la vez”" },
+              { key: "C", text: "“Siempre hacen todo mal”" },
+              { key: "D", text: "“Silencio, disciplina ahora”" }
+            ],
+            correct: "B",
+            timestamp: "1:28–1:46",
+            explanation: "Cambiar etiquetas descalificadoras por normas de conducta explícitas indica con claridad lo que se espera de ellos con respeto."
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: "Comunicación efectiva: Pilares clave",
+        shortTitle: "2. Pilares clave",
+        youtubeId: "Ve7scMruu4Y",
+        url: "https://www.youtube.com/watch?v=Ve7scMruu4Y",
+        description: "Fundamentos universales: escucha activa, concisión, empatía y asertividad para la productividad y resolución constructiva de conflictos.",
+        questions: [
+          {
+            id: "m2_q1",
+            text: "¿Cuál es una razón que el video da para por qué la comunicación efectiva es importante?",
+            options: [
+              { key: "A", text: "Para evitar cualquier tipo de emoción" },
+              { key: "B", text: "Para resolver conflictos y mejorar la productividad" },
+              { key: "C", text: "Para hablar más rápido que los demás" },
+              { key: "D", text: "Para aprender idiomas extranjeros" }
+            ],
+            correct: "B",
+            timestamp: "0:13",
+            explanation: "Una comunicación clara reduce roces interpersonales, clarifica expectativas y optimiza la eficacia en los equipos de trabajo."
+          },
+          {
+            id: "m2_q2",
+            text: "¿Cuál es el primer Pilar de la comunicación efectiva mencionado en el video?",
+            options: [
+              { key: "A", text: "Asertividad" },
+              { key: "B", text: "Claridad" },
+              { key: "C", text: "Escucha activa" },
+              { key: "D", text: "Empatía" }
+            ],
+            correct: "C",
+            timestamp: "0:39",
+            explanation: "La escucha activa es el pilar inicial sobre el cual se edifican la comprensión recíproca y las respuestas oportunas."
+          },
+          {
+            id: "m2_q3",
+            text: "¿Qué significa \"claridad\" según el video?",
+            options: [
+              { key: "A", text: "Usar palabras difíciles para impresionar" },
+              { key: "B", text: "Expresar ideas de forma clara y concisa" },
+              { key: "C", text: "Evitar hablar con otras personas" },
+              { key: "D", text: "Repetir el mismo mensaje muchas veces" }
+            ],
+            correct: "B",
+            timestamp: "0:55–1:03",
+            explanation: "La claridad se basa en sintetizar el mensaje para transmitir las ideas principales de manera concreta y directa."
+          },
+          {
+            id: "m2_q4",
+            text: "¿Cómo ayuda la empatía en la comunicación, según el video?",
+            options: [
+              { key: "A", text: "Permite ganar todas las discusiones" },
+              { key: "B", text: "Ayuda a ponerte en el lugar del otro y comprender sus emociones" },
+              { key: "C", text: "Enseña a hablar sin escuchar" },
+              { key: "D", text: "Obliga a la gente a aceptar tu punto de vista" }
+            ],
+            correct: "B",
+            timestamp: "1:10–1:17",
+            explanation: "La empatía permite percibir las circunstancias y emociones de los demás para modular nuestro mensaje de forma considerada."
+          },
+          {
+            id: "m2_q5",
+            text: "¿Cuál es la mejor descripción de la asertividad según el contenido del video?",
+            options: [
+              { key: "A", text: "Ser agresivo para imponer límites" },
+              { key: "B", text: "No decir nunca lo que piensas para evitar problemas" },
+              { key: "C", text: "Expresar deseos, opiniones y límites de manera clara y respetuosa" },
+              { key: "D", text: "Ignorar las reglas sociales para destacar" }
+            ],
+            correct: "C",
+            timestamp: "1:25–1:34",
+            explanation: "La asertividad es el equilibrio idóneo entre la sumisión y la agresión: comunicar convicciones firmemente sin vulnerar a otros."
+          }
+        ]
+      },
+      {
+        id: 3,
+        title: "Comunicación efectiva: 7 técnicas",
+        shortTitle: "3. Siete técnicas",
+        youtubeId: "6tGA8RDW-Z0",
+        url: "https://www.youtube.com/watch?v=6tGA8RDW-Z0&t=160s",
+        description: "Recomendaciones prácticas aplicables: sonrisa, silencios reflexivos, concisión, contacto visual, vulnerabilidad y lenguaje corporal.",
+        questions: [
+          {
+            id: "m3_q1",
+            text: "¿Cuál es la razón que el video da para sonreír cuando te comunicas?",
+            options: [
+              { key: "A", text: "La sonrisa hace que tus palabras suenen más largas." },
+              { key: "B", text: "Sonreír ayuda a que las otras personas se sientan bien." },
+              { key: "C", text: "Sonreír evita que necesites usar el teléfono." },
+              { key: "D", text: "La sonrisa sustituye la necesidad de escuchar." }
+            ],
+            correct: "B",
+            timestamp: "1:49–2:07",
+            explanation: "La sonrisa proyecta calidez humana, reduce barreras emocionales iniciales y predispone favorablemente a la audiencia."
+          },
+          {
+            id: "m3_q2",
+            text: "Según la Técnica 2, ¿qué debes hacer antes de emitir una opinión?",
+            options: [
+              { key: "A", text: "Hablar más rápido para que nadie interrumpa." },
+              { key: "B", text: "Hacer una pausa y pensar si conviene hablar." },
+              { key: "C", text: "Repetir lo que otros dijeron para estar seguro." },
+              { key: "D", text: "Cambiar de tema inmediatamente." }
+            ],
+            correct: "B",
+            timestamp: "2:15–2:33",
+            explanation: "Una pausa reflexiva permite evaluar si nuestro comentario aporta valor constructivo o si es preferible el silencio."
+          },
+          {
+            id: "m3_q3",
+            text: "¿Qué significa \"ir al grano\" en la Técnica 3?",
+            options: [
+              { key: "A", text: "Usar palabras largas para impresionar." },
+              { key: "B", text: "Evitar dar cualquier opinión personal." },
+              { key: "C", text: "Comunicar directamente el objetivo usando palabras específicas." },
+              { key: "D", text: "Hablar en círculos para no revelar información." }
+            ],
+            correct: "C",
+            timestamp: "2:37–3:00",
+            explanation: "Ir al grano implica eliminar preámbulos innecesarios y enfocarse en la esencia del mensaje con terminología adecuada."
+          },
+          {
+            id: "m3_q4",
+            text: "¿Cuál es un posible efecto negativo de hablar demasiado, según el video?",
+            options: [
+              { key: "A", text: "La gente te escucha con más atención." },
+              { key: "B", text: "Puedes mejorar la opinión que tienen de ti." },
+              { key: "C", text: "Puedes deteriorar la opinión que las personas tienen de ti." },
+              { key: "D", text: "Te hace más inteligente automáticamente." }
+            ],
+            correct: "C",
+            timestamp: "3:07–3:43",
+            explanation: "Monopolizar la conversación abruma al auditorio, transmite falta de consideración y erosiona la reputación del emisor."
+          },
+          {
+            id: "m3_q5",
+            text: "¿Qué práctica describe la Técnica 5 para mejorar la escucha activa?",
+            options: [
+              { key: "A", text: "Mirar el rostro de la persona y mantener contacto visual." },
+              { key: "B", text: "Preparar tu respuesta mientras el otro habla." },
+              { key: "C", text: "Interrumpir para corregir al interlocutor." },
+              { key: "D", text: "Evitar cualquier contacto visual para concentrarte." }
+            ],
+            correct: "A",
+            timestamp: "3:49–4:06",
+            explanation: "Sostener un contacto visual sereno valida al emisor y demuestra que toda nuestra atención está comprometida con sus palabras."
+          },
+          {
+            id: "m3_q6",
+            text: "Según la Técnica 6, ¿por qué mostrar vulnerabilidad puede ayudar en una presentación?",
+            options: [
+              { key: "A", text: "Porque oculta la información importante." },
+              { key: "B", text: "Porque hace ver que no te importa la audiencia." },
+              { key: "C", text: "Porque te hace ver auténtico y genera empatía." },
+              { key: "D", text: "Porque aumenta la duración de la presentación." }
+            ],
+            correct: "C",
+            timestamp: "4:17–4:45",
+            explanation: "La honestidad al admitir imperfecciones o aprendizajes humaniza al orador y genera un puente de confianza instantáneo con el público."
+          },
+          {
+            id: "m3_q7",
+            text: "¿Qué aspecto incluye la Técnica 7 para proyectar confianza?",
+            options: [
+              { key: "A", text: "Cambiar constantemente de lugar para mantener la atención." },
+              { key: "B", text: "Desarrollar un lenguaje corporal que muestre confianza, incluyendo gestos y postura." },
+              { key: "C", text: "Mantener los brazos cruzados para parecer serio." },
+              { key: "D", text: "Evitar contar tu historia personal en cualquier circunstancia." }
+            ],
+            correct: "B",
+            timestamp: "4:53–5:10",
+            explanation: "Postura erguida, hombros relajados y ademanes deliberados comunican dominio y seguridad aún antes de hablar."
+          }
+        ]
+      },
+      {
+        id: 4,
+        title: "La oratoria: historia y tipos",
+        shortTitle: "4. Historia y tipos",
+        youtubeId: "ZtIYXejymNA",
+        url: "https://www.youtube.com/watch?v=ZtIYXejymNA",
+        description: "El florecimiento de la retórica en la Grecia clásica: logógrafos, Lisias, Sócrates/Isócrates, filípicas y géneros de la elocuencia.",
+        questions: [
+          {
+            id: "m4_q1",
+            text: "¿Dónde se desarrolló principalmente la oratoria según el video?",
+            options: [
+              { key: "A", text: "En Roma" },
+              { key: "B", text: "En Sicilia" },
+              { key: "C", text: "En Grecia" },
+              { key: "D", text: "En Atenas" }
+            ],
+            correct: "C",
+            timestamp: "0:35–0:42",
+            explanation: "La cultura helénica clásica fue el escenario nuclear donde la retórica se sistematizó como arte cívico y filosófico."
+          },
+          {
+            id: "m4_q2",
+            text: "¿Cuál era la función de los \"logógrafos\" mencionada en el transcript?",
+            options: [
+              { key: "A", text: "Enseñar a hablar en público" },
+              { key: "B", text: "Redactar discursos para los tribunales" },
+              { key: "C", text: "Traducir discursos a otros idiomas" },
+              { key: "D", text: "Dirigir ceremonias religiosas" }
+            ],
+            correct: "B",
+            timestamp: "0:48–0:55",
+            explanation: "Eran autores profesionales contratados por litigantes atenienses para componer los discursos de defensa ante la asamblea judicial."
+          },
+          {
+            id: "m4_q3",
+            text: "¿Qué rasgos destaca el video sobre el estilo de Lisias?",
+            options: [
+              { key: "A", text: "Complejidad y ornamentación" },
+              { key: "B", text: "Pureza, sencillez y claridad" },
+              { key: "C", text: "Uso de palabras extrañas" },
+              { key: "D", text: "Lenguaje poético y metafórico" }
+            ],
+            correct: "B",
+            timestamp: "1:05–1:19",
+            explanation: "El modelo ático de Lisias sobresalió por su depuración léxica, naturalidad y transparencia expositiva."
+          },
+          {
+            id: "m4_q4",
+            text: "¿Qué aportó Sócrates/Isócrates a la oratoria según el transcript?",
+            options: [
+              { key: "A", text: "Creó la primera escuela de oratoria en Atenas" },
+              { key: "B", text: "Escribió 233 discursos" },
+              { key: "C", text: "Fue un famoso logógrafo judicial" },
+              { key: "D", text: "Inventó la oratoria persuasiva" }
+            ],
+            correct: "A",
+            timestamp: "1:21–1:33",
+            explanation: "Se le atribuye la inauguración del primer centro educativo de retórica formal en Atenas para la formación de líderes ciudadanos."
+          },
+          {
+            id: "m4_q5",
+            text: "¿Qué significa \"filípica\" según explica el video?",
+            options: [
+              { key: "A", text: "Un discurso religioso" },
+              { key: "B", text: "Un sermón para la enseñanza" },
+              { key: "C", text: "Un discurso condenatorio contra un actor político" },
+              { key: "D", text: "Un debate en una asamblea política" }
+            ],
+            correct: "C",
+            timestamp: "5:08–5:21",
+            explanation: "Originadas en las proclamas de Demóstenes contra Filipo de Macedonia, designa un discurso de vehemente denuncia política."
+          },
+          {
+            id: "m4_q6",
+            text: "¿Cuál de estos procedimientos para la persuasión NO fue asociado con Aristóteles en el video?",
+            options: [
+              { key: "A", text: "El carácter moral (ethos)" },
+              { key: "B", text: "La emoción (pathos)" },
+              { key: "C", text: "La elocuencia / argumento lógico (logos)" },
+              { key: "D", text: "La improvisación teatral" }
+            ],
+            correct: "D",
+            timestamp: "5:27–6:07",
+            explanation: "Aristóteles definió la persuasión sobre el trípode ethos (credibilidad moral), pathos (conexión afectiva) y logos (razonamiento discursivo)."
+          },
+          {
+            id: "m4_q7",
+            text: "¿Qué tipo de oratoria se usa principalmente para transmitir conocimientos mediante la palabra hablada?",
+            options: [
+              { key: "A", text: "Oratoria forense" },
+              { key: "B", text: "Oratoria pedagógica" },
+              { key: "C", text: "Oratoria sacra" },
+              { key: "D", text: "Oratoria deliberativa" }
+            ],
+            correct: "B",
+            timestamp: "7:01–7:08",
+            explanation: "La oratoria pedagógica o académica tiene el propósito primordial de educar, divulgar e instruir didácticamente al oyente."
+          }
+        ]
+      },
+      {
+        id: 5,
+        title: "La historia de la retórica y la oratoria",
+        shortTitle: "5. Retórica histórica",
+        youtubeId: "ipoWnCSHrAc",
+        url: "https://www.youtube.com/watch?v=ipoWnCSHrAc",
+        description: "Evolución milenaria: de los entrenamientos de Demóstenes hasta los tratados romanos de Quintiliano y el renacer de la Escuela de Bruselas.",
+        questions: [
+          {
+            id: "m5_q1",
+            text: "¿Cuál es la idea principal del video sobre la oratoria?",
+            options: [
+              { key: "A", text: "Que la oratoria solo sirve en la antigüedad" },
+              { key: "B", text: "Que la oratoria es una ciencia antigua sin valor hoy" },
+              { key: "C", text: "Que la oratoria sigue siendo vigente y útil en la actualidad" },
+              { key: "D", text: "Que la oratoria es solo un adorno del lenguaje" }
+            ],
+            correct: "C",
+            timestamp: "0:12–0:41",
+            explanation: "La oratoria contemporánea no es una reliquia arcaica, sino una competencia decisiva para liderar y convencer en la sociedad actual."
+          },
+          {
+            id: "m5_q2",
+            text: "¿Por qué la palabra \"retórica\" tiene a veces una connotación negativa en el lenguaje cotidiano, según el video?",
+            options: [
+              { key: "A", text: "Porque siempre fue una disciplina científica estricta" },
+              { key: "B", text: "Porque en la Edad Media se adaptó constantemente a la sociedad" },
+              { key: "C", text: "Porque se convirtió en un conjunto de formas repetidas y vacías, dándole más importancia a la forma que al fondo" },
+              { key: "D", text: "Porque nunca se enseñó en las universidades" }
+            ],
+            correct: "C",
+            timestamp: "1:52–2:32",
+            explanation: "Al reducirse a artificios estéticos carentes de verdad o ética, el término pasó a asociarse popularmente con el engaño superficial."
+          },
+          {
+            id: "m5_q3",
+            text: "¿Qué actividad hizo Demóstenes para mejorar su pronunciación, según la narración?",
+            options: [
+              { key: "A", text: "Estudiar leyes en la universidad" },
+              { key: "B", text: "Meterse piedras en la boca y practicar dicción" },
+              { key: "C", text: "Escribir discursos para políticos" },
+              { key: "D", text: "Tomar clases de canto en la ciudad" }
+            ],
+            correct: "B",
+            timestamp: "5:48–6:02",
+            explanation: "Demóstenes venció sus dificultades anatómicas y timidez ejercitándose con guijarros en la boca frente al estruendo de las olas marinas."
+          },
+          {
+            id: "m5_q4",
+            text: "¿Cuál de estas NO es una lección atribuida a Cicerón y Quintiliano en el video?",
+            options: [
+              { key: "A", text: "Los discursos deben prepararse" },
+              { key: "B", text: "Cualquier persona con trabajo puede aprender a hablar bien" },
+              { key: "C", text: "El orador debe controlar las circunstancias en que habla" },
+              { key: "D", text: "El orador debe evitar usar la memoria en sus discursos" }
+            ],
+            correct: "D",
+            timestamp: "7:34–7:58",
+            explanation: "La 'memoria' era un pilar fundacional de la retórica romana junto a la inventio, dispositio, elocutio y pronuntiatio."
+          },
+          {
+            id: "m5_q5",
+            text: "¿Qué hizo la \"escuela de Bruselas\" a finales del siglo XX respecto a la retórica?",
+            options: [
+              { key: "A", text: "Declarándola inútil para la comunicación moderna" },
+              { key: "B", text: "Reivindicarla y adaptarla a los nuevos medios y ciencias" },
+              { key: "C", text: "Prohibir su enseñanza en universidades" },
+              { key: "D", text: "Enseñarla solo como artefacto decorativo del lenguaje" }
+            ],
+            correct: "B",
+            timestamp: "3:53–4:20",
+            explanation: "Figuras como Perelman rescataron la retórica revitalizándola como teoría fundamental de la argumentación racional aplicable al derecho y los medios."
+          },
+          {
+            id: "m5_q6",
+            text: "Según el video, ¿por qué la retórica cayó en desuso durante siglos?",
+            options: [
+              { key: "A", text: "Porque nunca tuvo autores importantes en Grecia o Roma" },
+              { key: "B", text: "Porque las universidades medievales solo repetían conceptos antiguos sin innovar" },
+              { key: "C", text: "Porque la gente dejó de hablar en público" },
+              { key: "D", text: "Porque fue siempre una disciplina práctica y no teórica" }
+            ],
+            correct: "B",
+            timestamp: "2:49–3:08",
+            explanation: "El dogmatismo escolástico desconectó la retórica de los problemas vivos y debates dinámicos del quehacer cotidiano."
+          },
+          {
+            id: "m5_q7",
+            text: "¿Qué enseñanza final presenta el narrador sobre aprender a hablar en público?",
+            options: [
+              { key: "A", text: "Solo los genios como Demóstenes pueden llegar a ser buenos oradores" },
+              { key: "B", text: "Aprender a hablar en público es imposible sin talento natural" },
+              { key: "C", text: "Con voluntad, práctica y experiencia cualquiera puede mejorar y usar la palabra para lograr objetivos" },
+              { key: "D", text: "La oratoria moderna rechaza las técnicas antiguas por completo" }
+            ],
+            correct: "C",
+            timestamp: "7:03–7:29",
+            explanation: "La elocuencia no es un don inalcanzable de nacimiento, sino una destreza que toda persona disciplinada puede cultivar con práctica sistemática."
+          }
+        ]
+      },
+      {
+        id: 6,
+        title: "Oratoria moderna: 7 preguntas de comprensión (6.º grado)",
+        shortTitle: "6. Oratoria moderna",
+        youtubeId: "OFBWWIpTFXc",
+        url: "https://www.youtube.com/watch?v=OFBWWIpTFXc",
+        description: "Transformación contemporánea: lenguaje cercano, estructura tripartita, memorización selectiva de anclajes y modulación apasionada.",
+        questions: [
+          {
+            id: "m6_q1",
+            text: "¿Cuál era una característica común de la oratoria en el pasado según el video?",
+            options: [
+              { key: "A", text: "Hablar en voz baja y sonar informal" },
+              { key: "B", text: "Vestir ropa casual y sonreír mucho" },
+              { key: "C", text: "Hablar con volumen alto y usar gestos amplios" },
+              { key: "D", text: "Usar tecnología para mostrar diapositivas" }
+            ],
+            correct: "C",
+            timestamp: "0:10–0:37",
+            explanation: "La elocuencia decimonónica y tradicional privilegiaba la voz impostada, la grandilocuencia teatral y gestos mayúsculos de tribuna."
+          },
+          {
+            id: "m6_q2",
+            text: "¿Qué cambio principal describe el video sobre la oratoria moderna?",
+            options: [
+              { key: "A", text: "Es más rígida y formal que antes" },
+              { key: "B", text: "Está más enfocada en conectar con el público" },
+              { key: "C", text: "Exige siempre el uso de saco y corbata" },
+              { key: "D", text: "Prohíbe el uso de ejemplos históricos" }
+            ],
+            correct: "B",
+            timestamp: "0:37–0:48",
+            explanation: "El orador de hoy busca la autenticidad conversacional y la resonancia afectiva directa con la mente de su audiencia."
+          },
+          {
+            id: "m6_q3",
+            text: "¿Cuál es el primer paso (Técnica 1) que recomienda el presentador?",
+            options: [
+              { key: "A", text: "Memorizar todo el discurso palabra por palabra" },
+              { key: "B", text: "Definir el objetivo final de la presentación en una oración" },
+              { key: "C", text: "Hacer una lista de amigos para practicar" },
+              { key: "D", text: "Usar estadísticas y estudios científicos" }
+            ],
+            correct: "B",
+            timestamp: "2:53–3:09",
+            explanation: "Sintetizar la meta central en una sola frase asegura un rumbo inamovible para orientar cada argumento posterior."
+          },
+          {
+            id: "m6_q4",
+            text: "Según la Técnica 3, ¿qué estructura ayuda a que el público recuerde mejor la presentación?",
+            options: [
+              { key: "A", text: "Introducción, desarrollo y cierre con llamado a la acción" },
+              { key: "B", text: "Solo una lista de datos y cifras sin orden" },
+              { key: "C", text: "Presentar todo el contenido en una sola diapositiva" },
+              { key: "D", text: "Hacer preguntas al público durante toda la presentación" }
+            ],
+            correct: "A",
+            timestamp: "4:29–4:39",
+            explanation: "El esquema de tres actos (inicio cautivador, desarrollo argumental ordenado y desenlace resolutivo) fija el mensaje en la memoria colectiva."
+          },
+          {
+            id: "m6_q5",
+            text: "¿Qué sugiere la Técnica 4 acerca de la memorización?",
+            options: [
+              { key: "A", text: "No memorices nada; improvisa todo" },
+              { key: "B", text: "Memoriza solo la introducción, los puntos clave y el cierre" },
+              { key: "C", text: "Memoriza cada palabra para sonar perfecto" },
+              { key: "D", text: "Memoriza solo estadísticas y fechas" }
+            ],
+            correct: "B",
+            timestamp: "5:08–5:23",
+            explanation: "Asegurar de memoria el despegue, los hitos clave y la conclusión otorga seguridad y permite soltura conversacional durante el desarrollo."
+          },
+          {
+            id: "m6_q6",
+            text: "¿Cuál es la razón para practicar la presentación frente a amigos, según la Técnica 5?",
+            options: [
+              { key: "A", text: "Para que los amigos corrijan y interrumpan continuamente" },
+              { key: "B", text: "Para simular al público y entregar el mensaje sin detenerse" },
+              { key: "C", text: "Para que los amigos escriban el guion por ti" },
+              { key: "D", text: "Para evitar usar notas durante el ensayo" }
+            ],
+            correct: "B",
+            timestamp: "5:42–6:24",
+            explanation: "Entrenar con público real acostumbra al cerebro a gestionar distracciones involuntarias sin frenar la continuidad discursiva."
+          },
+          {
+            id: "m6_q7",
+            text: "¿Qué aspecto destaca la Técnica 7 como forma de mostrar pasión al hablar?",
+            options: [
+              { key: "A", text: "Hablar siempre en un mismo tono sin cambios" },
+              { key: "B", text: "Evitar nombres, fechas o cifras en el discurso" },
+              { key: "C", text: "Elevar el volumen o cambiar el tono en palabras clave y usar lenguaje no verbal" },
+              { key: "D", text: "Vestir ropa llamativa para distraer al público" }
+            ],
+            correct: "C",
+            timestamp: "7:30–8:14",
+            explanation: "La variedad tonal, la intensidad rítmica y la gesticulación expresiva transmiten compromiso visceral con el tema tratado."
+          }
+        ]
+      }
+    ];
+
+    let currentSectionIndex = 0;
+    const userAnswers = {};
+    const sectionGraded = {};
+    let soundEnabled = true;
+
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, type, duration, delay = 0) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        setTimeout(() => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, ctx.currentTime);
+          gain.gain.setValueAtTime(0.06, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + duration);
+        }, delay * 1000);
+      } catch (e) {
+        console.warn("Audio unavailable:", e);
+      }
+    }
+
+    function playSuccessSound() {
+      playTone(523.25, 'sine', 0.15, 0);
+      playTone(659.25, 'sine', 0.2, 0.08);
+      playTone(783.99, 'triangle', 0.25, 0.16);
+    }
+
+    function playErrorSound() {
+      playTone(280, 'sawtooth', 0.15, 0);
+      playTone(220, 'sawtooth', 0.25, 0.12);
+    }
+
+    function toggleAudio() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('soundIcon');
+      if (soundEnabled) {
+        icon.className = "fa-solid fa-volume-high text-sm";
+        showToast("Sonido activado", "info");
+      } else {
+        icon.className = "fa-solid fa-volume-xmark text-sm";
+        showToast("Sonido desactivado", "info");
+      }
+    }
+
+    function renderNavigation() {
+      const nav = document.getElementById('sectionNavList');
+      const mobileTabs = document.getElementById('mobileTabsBar');
+      nav.innerHTML = '';
+      mobileTabs.innerHTML = '';
+
+      let totalSectionsDone = 0;
+
+      videoSections.forEach((sec, idx) => {
+        const isCurrent = idx === currentSectionIndex;
+        const totalQ = sec.questions.length;
+        let answeredQ = 0;
+        let correctQ = 0;
+
+        sec.questions.forEach(q => {
+          if (userAnswers[q.id]) {
+            answeredQ++;
+            if (userAnswers[q.id] === q.correct) correctQ++;
+          }
+        });
+
+        const isGraded = !!sectionGraded[sec.id];
+        if (isGraded) totalSectionsDone++;
+
+        // Desktop sidebar button
+        const item = document.createElement('button');
+        item.onclick = () => changeSection(idx);
+        item.className = `w-full text-left p-3 rounded-xl transition flex items-center justify-between group ${
+          isCurrent 
+            ? 'bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-100' 
+            : 'text-slate-700 hover:bg-slate-100 font-medium'
+        }`;
+
+        let statusBadge = '';
+        if (isGraded) {
+          const pass = (correctQ / totalQ) >= 0.7;
+          statusBadge = `<span class="text-xs px-2 py-0.5 rounded-full ${
+            isCurrent 
+              ? (pass ? 'bg-emerald-400/20 text-emerald-100 border border-emerald-300/30' : 'bg-rose-400/20 text-rose-100')
+              : (pass ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700')
+          }">${correctQ}/${totalQ}</span>`;
+        } else {
+          statusBadge = `<span class="text-xs px-2 py-0.5 rounded-full ${
+            isCurrent ? 'bg-indigo-500/50 text-indigo-100' : 'bg-slate-200 text-slate-600'
+          }">${answeredQ}/${totalQ}</span>`;
+        }
+
+        item.innerHTML = `
+          <div class="flex items-center space-x-2.5 truncate">
+            <span class="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
+              isCurrent ? 'bg-indigo-700 text-white' : 'bg-slate-200 text-slate-700'
+            }">${sec.id}</span>
+            <span class="truncate text-sm">${sec.shortTitle}</span>
+          </div>
+          <div>${statusBadge}</div>
+        `;
+        nav.appendChild(item);
+
+        // Mobile pill button
+        const mobBtn = document.createElement('button');
+        mobBtn.onclick = () => changeSection(idx);
+        mobBtn.className = `px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 shrink-0 ${
+          isCurrent 
+            ? 'bg-indigo-600 text-white shadow-sm' 
+            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+        }`;
+        mobBtn.innerHTML = `<span>#${sec.id}</span> <span>${sec.shortTitle}</span>`;
+        mobileTabs.appendChild(mobBtn);
+      });
+
+      document.getElementById('modulesCompletedBadge').innerText = `${totalSectionsDone}/6 calificados`;
+      updateOverallMetrics();
+    }
+
+    function changeSection(newIndex) {
+      if (newIndex < 0 || newIndex >= videoSections.length) return;
+      currentSectionIndex = newIndex;
+      renderCurrentSection();
+      renderNavigation();
+      document.getElementById('mainContainer').scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderCurrentSection() {
+      const sec = videoSections[currentSectionIndex];
+      const isGraded = !!sectionGraded[sec.id];
+
+      document.getElementById('prevSecBtn').disabled = currentSectionIndex === 0;
+      document.getElementById('prevSecBtn').classList.toggle('opacity-40', currentSectionIndex === 0);
+      document.getElementById('prevSecBtn').classList.toggle('cursor-not-allowed', currentSectionIndex === 0);
+
+      document.getElementById('nextSecBtn').disabled = currentSectionIndex === videoSections.length - 1;
+      document.getElementById('nextSecBtn').classList.toggle('opacity-40', currentSectionIndex === videoSections.length - 1);
+      document.getElementById('nextSecBtn').classList.toggle('cursor-not-allowed', currentSectionIndex === videoSections.length - 1);
+
+      const hero = document.getElementById('sectionHeroCard');
+      hero.innerHTML = `
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider rounded-md bg-indigo-100 text-indigo-700">
+                Sección ${sec.id} de 6
+              </span>
+              <span class="text-xs text-slate-500 font-medium">${sec.questions.length} preguntas interactivas</span>
+            </div>
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900">${sec.title}</h2>
+            <p class="text-xs sm:text-sm text-slate-600 max-w-2xl">${sec.description}</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <a href="${sec.url}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 flex items-center gap-1.5 transition">
+              <i class="fa-brands fa-youtube text-red-600 text-sm"></i> Ver en YouTube
+            </a>
+            <button onclick="toggleVideoEmbed('${sec.youtubeId}')" id="toggleEmbedBtn" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-play text-xs"></i> Reproductor aquí
+            </button>
+          </div>
+        </div>
+
+        <div id="videoEmbedContainer" class="hidden mt-4 pt-4 border-t border-slate-100">
+          <div class="relative w-full rounded-xl overflow-hidden aspect-video bg-black shadow-inner">
+            <iframe id="videoIframe" class="w-full h-full" src="" title="Video de referencia" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+      `;
+
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = '';
+
+      sec.questions.forEach((q, qIdx) => {
+        const qCard = document.createElement('div');
+        qCard.id = `card_${q.id}`;
+        qCard.className = `bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm transition-all duration-200`;
+
+        const userChoice = userAnswers[q.id];
+        let feedbackBlock = '';
+
+        if (isGraded) {
+          const isCorrect = userChoice === q.correct;
+          const isSkipped = !userChoice;
+
+          feedbackBlock = `
+            <div class="mt-4 p-3.5 rounded-xl text-xs sm:text-sm ${
+              isSkipped
+                ? 'bg-amber-50 text-amber-900 border border-amber-200'
+                : isCorrect 
+                  ? 'bg-emerald-50 text-emerald-900 border border-emerald-200' 
+                  : 'bg-rose-50 text-rose-900 border border-rose-200'
+            }">
+              <div class="flex items-start gap-2">
+                <i class="mt-0.5 ${
+                  isSkipped 
+                    ? 'fa-solid fa-triangle-exclamation text-amber-600'
+                    : isCorrect 
+                      ? 'fa-solid fa-circle-check text-emerald-600' 
+                      : 'fa-solid fa-circle-xmark text-rose-600'
+                }"></i>
+                <div class="space-y-1">
+                  <div class="font-bold">
+                    ${isSkipped ? 'Pregunta no respondida' : isCorrect ? '¡Correcto!' : `Opción incorrecta (Marcaste ${userChoice})`}
+                  </div>
+                  <div>
+                    <strong>Respuesta oficial:</strong> Opción ${q.correct}.
+                  </div>
+                  <div class="pt-1 border-t border-slate-200/60 text-slate-600">
+                    <span class="font-semibold">Explicación:</span> ${q.explanation}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        let optionsHTML = '';
+        q.options.forEach(opt => {
+          const isSelected = userChoice === opt.key;
+          let extraClasses = 'border-slate-200 hover:border-indigo-300 hover:bg-slate-50';
+          let badgeColor = 'bg-slate-100 text-slate-700';
+
+          if (isGraded) {
+            if (opt.key === q.correct) {
+              extraClasses = 'border-emerald-500 bg-emerald-50/70 text-emerald-900 font-semibold ring-1 ring-emerald-500';
+              badgeColor = 'bg-emerald-600 text-white';
+            } else if (isSelected && opt.key !== q.correct) {
+              extraClasses = 'border-rose-400 bg-rose-50/70 text-rose-900 font-semibold line-through ring-1 ring-rose-400';
+              badgeColor = 'bg-rose-600 text-white';
+            } else {
+              extraClasses = 'border-slate-200 opacity-60';
+            }
+          } else if (isSelected) {
+            extraClasses = 'border-indigo-600 bg-indigo-50/80 font-semibold ring-1 ring-indigo-600';
+            badgeColor = 'bg-indigo-600 text-white';
+          }
+
+          optionsHTML += `
+            <label class="relative flex items-center p-3 sm:p-3.5 rounded-xl border transition-all cursor-pointer select-none ${extraClasses}">
+              <input type="radio" name="${q.id}" value="${opt.key}" ${isSelected ? 'checked' : ''} onchange="handleSelectOption('${q.id}', '${opt.key}')" class="sr-only">
+              <span class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 mr-3 transition ${badgeColor}">
+                ${opt.key}
+              </span>
+              <span class="text-xs sm:text-sm text-slate-800 leading-snug">${opt.text}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <div class="flex items-start justify-between gap-3 mb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold flex items-center justify-center">
+                ${qIdx + 1}
+              </span>
+              <span class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md flex items-center gap-1" title="Momento clave en el video">
+                <i class="fa-regular fa-clock"></i> Timestamp [${q.timestamp}]
+              </span>
+            </div>
+          </div>
+          <p class="font-semibold text-slate-900 text-sm sm:text-base mb-3">${q.text}</p>
+          <div class="grid grid-cols-1 gap-2">
+            ${optionsHTML}
+          </div>
+          ${feedbackBlock}
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    function handleSelectOption(questionId, selectedKey) {
+      userAnswers[questionId] = selectedKey;
+      renderNavigation();
+
+      const sec = videoSections[currentSectionIndex];
+      if (sectionGraded[sec.id]) {
+        renderCurrentSection();
+      } else {
+        const card = document.getElementById(`card_${questionId}`);
+        const inputs = card.querySelectorAll('input[type="radio"]');
+        inputs.forEach(input => {
+          const parent = input.closest('label');
+          const badge = parent.querySelector('span:first-of-type');
+          if (input.value === selectedKey) {
+            parent.className = "relative flex items-center p-3 sm:p-3.5 rounded-xl border transition-all cursor-pointer select-none border-indigo-600 bg-indigo-50/80 font-semibold ring-1 ring-indigo-600";
+            badge.className = "w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 mr-3 transition bg-indigo-600 text-white";
+          } else {
+            parent.className = "relative flex items-center p-3 sm:p-3.5 rounded-xl border transition-all cursor-pointer select-none border-slate-200 hover:border-indigo-300 hover:bg-slate-50";
+            badge.className = "w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 mr-3 transition bg-slate-100 text-slate-700";
+          }
+        });
+      }
+    }
+
+    function toggleVideoEmbed(youtubeId) {
+      const container = document.getElementById('videoEmbedContainer');
+      const iframe = document.getElementById('videoIframe');
+      const btn = document.getElementById('toggleEmbedBtn');
+
+      if (container.classList.contains('hidden')) {
+        iframe.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1`;
+        container.classList.remove('hidden');
+        btn.innerHTML = `<i class="fa-solid fa-eye-slash text-xs"></i> Ocultar`;
+      } else {
+        iframe.src = "";
+        container.classList.add('hidden');
+        btn.innerHTML = `<i class="fa-solid fa-play text-xs"></i> Reproductor aquí`;
+      }
+    }
+
+    function gradeCurrentSection() {
+      const sec = videoSections[currentSectionIndex];
+      let correct = 0;
+      const total = sec.questions.length;
+
+      sec.questions.forEach(q => {
+        if (userAnswers[q.id] === q.correct) correct++;
+      });
+
+      sectionGraded[sec.id] = true;
+      renderCurrentSection();
+      renderNavigation();
+
+      if (correct === total) {
+        playSuccessSound();
+        showToast(`¡Puntaje perfecto en Sección ${sec.id}! (${correct}/${total})`, "success");
+      } else if (correct >= Math.ceil(total * 0.7)) {
+        playSuccessSound();
+        showToast(`¡Buen trabajo en Sección ${sec.id}! Aciertos: ${correct} de ${total}`, "info");
+      } else {
+        playErrorSound();
+        showToast(`Sección ${sec.id}: ${correct} de ${total}. ¡Revisa las explicaciones!`, "warning");
+      }
+    }
+
+    function resetCurrentSection() {
+      const sec = videoSections[currentSectionIndex];
+      sec.questions.forEach(q => {
+        delete userAnswers[q.id];
+      });
+      delete sectionGraded[sec.id];
+      renderCurrentSection();
+      renderNavigation();
+      showToast(`Sección ${sec.id} reiniciada`, "info");
+    }
+
+    function resetAllQuiz() {
+      Object.keys(userAnswers).forEach(key => delete userAnswers[key]);
+      Object.keys(sectionGraded).forEach(key => delete sectionGraded[key]);
+      renderCurrentSection();
+      renderNavigation();
+      showToast("Cuestionario reiniciado por completo", "info");
+    }
+
+    function updateOverallMetrics() {
+      let totalQuestions = 0;
+      let totalCorrect = 0;
+      let totalAnswered = 0;
+
+      videoSections.forEach(sec => {
+        totalQuestions += sec.questions.length;
+        sec.questions.forEach(q => {
+          if (userAnswers[q.id]) {
+            totalAnswered++;
+            if (userAnswers[q.id] === q.correct) totalCorrect++;
+          }
+        });
+      });
+
+      const percent = Math.round((totalCorrect / totalQuestions) * 100);
+      document.getElementById('headerScore').innerText = `${totalCorrect} / ${totalQuestions} (${percent}%)`;
+      
+      const answeredPercent = Math.round((totalAnswered / totalQuestions) * 100);
+      document.getElementById('overallProgressBar').style.width = `${answeredPercent}%`;
+    }
+
+    function openGlobalSummaryModal() {
+      const content = document.getElementById('summaryContent');
+      let totalQuestions = 0;
+      let totalCorrect = 0;
+      let totalAnswered = 0;
+      let sectionCardsHTML = '';
+
+      videoSections.forEach(sec => {
+        const secTotal = sec.questions.length;
+        totalQuestions += secTotal;
+        let secCorrect = 0;
+        let secAnswered = 0;
+
+        sec.questions.forEach(q => {
+          if (userAnswers[q.id]) {
+            secAnswered++;
+            if (userAnswers[q.id] === q.correct) secCorrect++;
+          }
+        });
+
+        totalCorrect += secCorrect;
+        totalAnswered += secAnswered;
+        const secPercent = Math.round((secCorrect / secTotal) * 100);
+        const isGraded = !!sectionGraded[sec.id];
+
+        sectionCardsHTML += `
+          <div class="p-3 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
+            <div class="space-y-0.5 max-w-[70%]">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-white text-slate-700 border border-slate-200">#${sec.id}</span>
+                <h4 class="text-xs sm:text-sm font-semibold text-slate-800 truncate">${sec.title}</h4>
+              </div>
+              <p class="text-[11px] text-slate-500">${secAnswered} de ${secTotal} respondidas • ${isGraded ? 'Calificada' : 'Sin calificar'}</p>
+            </div>
+            <div class="text-right">
+              <span class="text-sm sm:text-base font-bold ${secPercent >= 70 ? 'text-emerald-600' : 'text-slate-700'}">${secCorrect} / ${secTotal}</span>
+              <div class="text-[10px] text-slate-400">${secPercent}% aciertos</div>
+            </div>
+          </div>
+        `;
+      });
+
+      const globalPercent = Math.round((totalCorrect / totalQuestions) * 100);
+
+      content.innerHTML = `
+        <div class="grid grid-cols-3 gap-2 sm:gap-3 p-3 sm:p-4 bg-indigo-50/60 rounded-xl border border-indigo-100 text-center mb-3">
+          <div>
+            <div class="text-[10px] sm:text-xs text-indigo-700 font-semibold uppercase">Respondidas</div>
+            <div class="text-base sm:text-xl font-bold text-slate-900">${totalAnswered} / ${totalQuestions}</div>
+          </div>
+          <div>
+            <div class="text-[10px] sm:text-xs text-indigo-700 font-semibold uppercase">Aciertos</div>
+            <div class="text-base sm:text-xl font-bold text-emerald-600">${totalCorrect}</div>
+          </div>
+          <div>
+            <div class="text-[10px] sm:text-xs text-indigo-700 font-semibold uppercase">Calificación</div>
+            <div class="text-base sm:text-xl font-bold text-indigo-700">${globalPercent}%</div>
+          </div>
+        </div>
+
+        <h3 class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Desglose por Módulo de Video</h3>
+        <div class="space-y-2">
+          ${sectionCardsHTML}
+        </div>
+      `;
+
+      document.getElementById('summaryModal').classList.remove('hidden');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    function exportResultsSummary() {
+      let report = `=== REPORTE DE EVALUACIÓN: COMUNICACIÓN & ORATORIA ===\n`;
+      let totalQ = 0;
+      let totalC = 0;
+
+      videoSections.forEach(sec => {
+        let secC = 0;
+        sec.questions.forEach(q => {
+          totalQ++;
+          if (userAnswers[q.id] === q.correct) {
+            secC++;
+            totalC++;
+          }
+        });
+        report += `• ${sec.title}: ${secC}/${sec.questions.length} correctas\n`;
+      });
+
+      report += `------------------------------------------------------\n`;
+      report += `PUNTAJE GLOBAL: ${totalC} / ${totalQ} (${Math.round((totalC/totalQ)*100)}%)\n`;
+
+      const dummy = document.createElement("textarea");
+      document.body.appendChild(dummy);
+      dummy.value = report;
+      dummy.select();
+      document.execCommand("copy");
+      document.body.removeChild(dummy);
+
+      showToast("Reporte copiado al portapapeles", "success");
+    }
+
+    function showToast(message, type = "info") {
+      const toast = document.getElementById('toast');
+      const toastInner = document.getElementById('toastInner');
+      const toastIcon = document.getElementById('toastIcon');
+      const toastMessage = document.getElementById('toastMessage');
+
+      toastMessage.innerText = message;
+      if (type === "success") {
+        toastIcon.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>`;
+        toastInner.className = "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl shadow-lg border text-xs sm:text-sm font-semibold bg-emerald-50 text-emerald-950 border-emerald-200";
+      } else if (type === "warning") {
+        toastIcon.innerHTML = `<i class="fa-solid fa-circle-exclamation text-amber-600 text-base"></i>`;
+        toastInner.className = "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl shadow-lg border text-xs sm:text-sm font-semibold bg-amber-50 text-amber-950 border-amber-200";
+      } else {
+        toastIcon.innerHTML = `<i class="fa-solid fa-circle-info text-indigo-600 text-base"></i>`;
+        toastInner.className = "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl shadow-lg border text-xs sm:text-sm font-semibold bg-white text-slate-800 border-slate-200";
+      }
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    window.onload = function() {
+      renderNavigation();
+      renderCurrentSection();
+    };
+  </script>
+</body>
+</html>
